@@ -1,13 +1,29 @@
+/**
+ * Copyright 2010 Synaptik Solutions
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+ * See the License for the specific language governing permissions and 
+ * limitations under the License. 
+ * 
+ * @author Dan Watling <dan@synaptik.com>
+ */
 package com.synaptik.athena;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestListener;
-import junit.framework.TestResult;
 import junit.framework.TestSuite;
 import android.app.Activity;
 import android.app.Instrumentation;
@@ -26,7 +42,7 @@ public class AthenaTestRunner extends Instrumentation {
 	private Bundle mResults = new Bundle();
 	private StringBuilder result = new StringBuilder();
 	private TestSuite mTestSuite;
-	private HashMap<Class<? extends TestCase>, List<TestResult>> results = new HashMap<Class<? extends TestCase>, List<TestResult>>();
+	private List<AthenaTestSuite> suiteResults;
 	
 	public static final String ARGUMENT_TEST_PACKAGE = "package";
 	
@@ -39,6 +55,8 @@ public class AthenaTestRunner extends Instrumentation {
 		super.onCreate(arguments);
 		Log.d(LOG_KEY, this.getContext().getPackageName());
 		Log.d(LOG_KEY, this.getContext().getClass().getName());
+		
+		suiteResults = new ArrayList<AthenaTestSuite>();
 		
 		mTestSuite = buildTestSuite();
 		mRunner = new AndroidTestRunner();
@@ -55,12 +73,15 @@ public class AthenaTestRunner extends Instrumentation {
 		Log.d(LOG_KEY, "onStart called");
 		super.onStart();
 		mRunner.addTestListener(new MyTestListener());
-		result.append("<testsuite>\n");
 		if (mRunner.getTestCases() != null && mRunner.getTestCases().size() > 0) {
 			Log.i(LOG_KEY, "Number of tests: " + mRunner.getTestCases().size());
 			mRunner.runTest();
 		}
-		result.append("</testsuite>\n");
+		result.append("<testsuites>\n");
+		for (AthenaTestSuite suite : suiteResults) {
+			result.append(suite.toXML());
+		}
+		result.append("</testsuites>\n");
 		mResults.putString(Instrumentation.REPORT_KEY_STREAMRESULT, result.toString());		
 		
 		finish(Activity.RESULT_OK, mResults);
@@ -80,8 +101,22 @@ public class AthenaTestRunner extends Instrumentation {
 	
 	private TestSuite buildTestSuite() {
 		TestSuite result = new TestSuite();
-		/** Need to retrieve list of all test classes from context package path **/ 
-//		result.addTestSuite(DanTest.class);
+		/** @TODO Need to retrieve list of all test classes from context package path instead of requiring AllTests**/
+		String allTestsClass = this.getContext().getPackageName() + ".AllTests";
+		Class<AthenaTestCase> clazz = null;
+		try {
+			clazz = (Class<AthenaTestCase>)Class.forName(allTestsClass);
+			List<Class> classes = clazz.newInstance().getTestClasses();
+			for (Class c : classes) {
+				result.addTestSuite(c);
+			}
+		} catch (ClassNotFoundException e) {
+			Log.e(LOG_KEY, "Class not found " + allTestsClass + ". You need to specify this in order to use AthenaTestRunner.");
+		} catch (IllegalAccessException e) {
+			Log.e(LOG_KEY, "Class not found " + allTestsClass + ". You need to specify this in order to use AthenaTestRunner.");
+		} catch (InstantiationException e) {
+			Log.e(LOG_KEY, "Class not found " + allTestsClass + ". You need to specify this in order to use AthenaTestRunner.");
+		}
 		
 		Log.i(LOG_KEY, "Name: " + result.getName());
 		Log.i(LOG_KEY, "Number of test cases: " + result.countTestCases());
@@ -90,45 +125,55 @@ public class AthenaTestRunner extends Instrumentation {
 	}
 	
 	protected class MyTestListener implements TestListener {
-
 		protected long start;
 		protected long end;
 		protected Throwable error;
 		protected AssertionFailedError failure;
 		
-		@Override
 		public void addError(Test test, Throwable t) {
 			this.error = t;
 		}
 
-		@Override
 		public void addFailure(Test test, AssertionFailedError t) {
 			this.failure = t;
 		}
 		
-		@Override
 		public void endTest(Test test) {
 			this.end = System.currentTimeMillis();
-			if (this.error != null) {
-				addErrorToResults(test, this.start, this.end, this.error);
-			} else if (this.failure != null) {
-				addFailureToResults(test, this.start, this.end, this.failure);
-			} else {
-				addPassToResults(test, this.start, this.end);
-			}
+			addToResults(test, this.start, this.end, this.error, this.failure);
 		}
 
-		@Override
 		public void startTest(Test test) {
 			this.end = -1;
+			this.error = null;
+			this.failure = null;
 			this.start = System.currentTimeMillis();
 		}
 	}
 	
-	protected void addErrorToResults(Test t, long start, long end, Throwable error) {
+	protected void addToResults(Test t, long start, long end, Throwable error, AssertionFailedError failure) {
+		String className = AthenaTestResult.getClassNameFromString(t.toString());
+		String testName = AthenaTestResult.getTestNameFromString(t.toString());
+		AthenaTestSuite suite = getOrCreateSuite(className);
+		AthenaTestResult testResult = new AthenaTestResult(testName, start, end, error, failure);
+		suite.results.add(testResult);
 	}
-	protected void addFailureToResults(Test t, long start, long end, AssertionFailedError error) {
+	
+	protected AthenaTestSuite getOrCreateSuite(String className) {
+		AthenaTestSuite result = null;
+		
+		for (AthenaTestSuite suite : suiteResults) {
+			if (className.equals(suite.className)) {
+				result = suite;
+				break;
+			}
+		}
+		
+		if (result == null) {
+			result = new AthenaTestSuite(className);
+			suiteResults.add(result);
+		}
+		return result;
 	}
-	protected void addPassToResults(Test t, long start, long end) {
-	}
+	
 }

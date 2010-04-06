@@ -1,29 +1,27 @@
+/**
+ * Copyright 2010 Synaptik Solutions
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+ * See the License for the specific language governing permissions and 
+ * limitations under the License. 
+ * 
+ * @author Dan Watling <dan@synaptik.com>
+ */
 package com.synaptik.athena;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.test.ActivityInstrumentationTestCase2;
+import java.util.List;
 
 /**
  * @author Dan Watling
  */
-public class AthenaTestCase<T extends Activity> extends ActivityInstrumentationTestCase2<T> {
-	
-	public Athena athena;
-
-	public AthenaTestCase(String pkg, Class<T> activityClass) {
-		super(pkg, (Class<T>)activityClass);
-	}
-	
-	public void setUp() {
-		athena = new Athena(getInstrumentation(), getActivity());
-//		athena.buildViewList(getActivity().getWindow().getDecorView());
-		athena.itc = this;
-	}
-	
-	public void tearDown() {
-		getActivity().finish();
-		athena.i.finish(0, new Bundle());
-	}
-
+public abstract class AthenaTestCase {
+	public abstract List<Class> getTestClasses();
 }
