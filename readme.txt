@@ -21,7 +21,7 @@ test results in an XML format digestible by Hudson (and probably any other CI ap
 
 In order to use Athena, you will need to do the following:
 
-1) Copy athena-0.1.jar to your Android Test project's lib folder.
+1) Copy athena-0.2.jar to your Android Test project's lib folder.
 2) Modify your AndroidManifest.xml file to use com.synaptik.athena.AthenaTestRunner instead of
    com.android.test.InstrumentationTestRunner.
 3) Add an AllTests.java file to the root of your test package. This file will need
