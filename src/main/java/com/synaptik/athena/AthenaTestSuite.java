@@ -17,6 +17,10 @@
  */
 package com.synaptik.athena;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,11 +28,11 @@ import java.util.List;
 
 public class AthenaTestSuite {
 	public String className;
-	public List<AthenaTestResult> results;
+	public List<AthenaTest> tests;
 	
 	public AthenaTestSuite(String className) {
 		this.className = className;
-		results = new ArrayList<AthenaTestResult>();
+		tests = new ArrayList<AthenaTest>();
 	}
 	
 	protected String getPackage() {
@@ -41,8 +45,8 @@ public class AthenaTestSuite {
 	
 	protected int getErrors() {
 		int result = 0;
-		for (AthenaTestResult testResult : results) {
-			if (testResult.error != null) {
+		for (AthenaTest test : tests) {
+			if (test.result.error != null) {
 				result ++;
 			}
 		}
@@ -51,8 +55,8 @@ public class AthenaTestSuite {
 	
 	protected int getFailures() {
 		int result = 0;
-		for (AthenaTestResult testResult : results) {
-			if (testResult.failure != null) {
+		for (AthenaTest test : tests) {
+			if (test.result.failure != null) {
 				result ++;
 			}
 		}
@@ -61,9 +65,9 @@ public class AthenaTestSuite {
 	
 	protected long getTime() {
 		long result = 0;
-		for (AthenaTestResult testResult : results) {
-			if (testResult.failure != null) {
-				result += (testResult.end - testResult.start);
+		for (AthenaTest test : tests) {
+			if (test.result.failure != null) {
+				result += test.result.time;
 			}
 		}
 		
@@ -73,10 +77,16 @@ public class AthenaTestSuite {
 	protected String getTimestamp() {
 		String result = "";
 		long start = Long.MAX_VALUE;
-		for (AthenaTestResult testResult : results) {
-			if (testResult.start < start) {
-				start = testResult.start;
+		for (AthenaTest test : tests) {
+			if (test.result.start < start) {
+				start = test.result.start;
 			}
+		}
+		
+		if (start == Long.MAX_VALUE) {
+			// This means there were no tests in the suite. Set it to a reasonable 
+			// value
+			start = System.currentTimeMillis();
 		}
 		
 		Date d = new Date(start);
@@ -86,12 +96,47 @@ public class AthenaTestSuite {
 		return result;
 	}
 	
+	public void populateTests(File classFile) throws IOException {
+		FileReader fr = null;
+		BufferedReader br = null;
+		try {
+			fr = new FileReader(classFile);
+			br = new BufferedReader(fr);
+			
+			String line = br.readLine();
+			while (line != null) {
+				if (line.contains("void test")) {
+					String testName = getTestName(line);
+					AthenaTest test = new AthenaTest();
+					test.name = testName;
+					tests.add(test);
+				}
+				line = br.readLine();
+			}
+		} finally {
+			if (br != null) { br.close(); }
+		}
+	}
+	
+	public String getTestName(String line) {
+		String result = line.substring(line.indexOf(" test")+1);
+		for (int i = 0; i < result.length(); i ++) {
+			char ch = result.charAt(i);
+			if (!Character.isLetterOrDigit(ch) && ch != '_') {
+				result = result.substring(0, i);
+				break;
+			}
+		}
+		return result;
+	}
+	
+	
 	public String toXML() {
 		StringBuilder result = new StringBuilder();
-		result.append("\t<testsuite errors=\"").append(getErrors()).append("\" failures=\"").append(getFailures()).append("\" name=\"").append(getClassName()).append("\" package=\"").append(getPackage()).append("\" tests=\"").append(results.size()).append("\" time=\"").append(getTime() / 1000.0f).append("\" timestamp=\"").append(getTimestamp()).append("\">\n");
+		result.append("\t<testsuite errors=\"").append(getErrors()).append("\" failures=\"").append(getFailures()).append("\" name=\"").append(getClassName()).append("\" package=\"").append(getPackage()).append("\" tests=\"").append(tests.size()).append("\" time=\"").append(getTime()).append("\" timestamp=\"").append(getTimestamp()).append("\">\n");
 		result.append("\t\t<properties/>\n");
-		for (AthenaTestResult tr : results) {
-			result.append(tr.toXML(className));
+		for (AthenaTest test : tests) {
+			result.append(test.result.toXML(className));
 		}
 		result.append("\t\t<system-out>\n");
 		result.append("\t\t</system-out>\n");

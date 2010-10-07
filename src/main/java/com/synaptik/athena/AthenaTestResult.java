@@ -17,37 +17,27 @@
  */
 package com.synaptik.athena;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
-import junit.framework.AssertionFailedError;
 
 public class AthenaTestResult {
 
 	protected String testName;
+	protected float time;
 	protected long start;
-	protected long end;
-	protected Throwable error;
-	protected AssertionFailedError failure;
+	protected String error;
+	protected String errorClass;
+	protected String failure;
+	protected String failureClass;
+	protected String failureException;
 	
-	public  AthenaTestResult(String testName, long start, long end, Throwable error, AssertionFailedError failure) {
-		this.testName = testName;
-		this.start = start;
-		this.end = end;
-		this.error = error;
-		this.failure = failure;
+	public AthenaTestResult() {
 	}
 	
 	public String toXML(String className) {
 		StringBuilder result = new StringBuilder();
-		float duration = (end - start) / 1000.0f;
-		result.append("\t\t<testcase classname=\"").append(className).append("\" name=\"").append(testName).append("\" time=\"").append(duration).append("\">\n");
+		result.append("\t\t<testcase classname=\"").append(className).append("\" name=\"").append(testName).append("\" time=\"").append(time).append("\">\n");
 		if (failure != null) {
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			failure.printStackTrace(pw);
-			result.append("\t\t\t<failure type=\"").append(failure.getClass().getName()).append("\" message=\"").append(escapeHTML(failure.getMessage())).append("\">\n");
-			result.append(escapeHTML(sw.toString())).append("\n");
+			result.append("\t\t\t<failure type=\"").append(failureClass).append("\" message=\"").append(escapeHTML(failure)).append("\">\n");
+			result.append(escapeHTML(failureException)).append("\n");
 			result.append("\t\t\t</failure>\n");
 		}
 		result.append("\t\t</testcase>\n");
@@ -85,6 +75,34 @@ public class AthenaTestResult {
 		result = result.replaceAll(">", "&gt;");
 		result = result.replaceAll("\"", "&quot;");
 		return result;
+	}
+	
+
+	// Do we need to handle errorStream?
+	public void parse(String outputStream, String errorStream) {
+		final String AFE = "junit.framework.AssertionFailedError";
+		final String TIME = "Time:";
+		String[] lines = outputStream.split("\n");
+		boolean capture = false;
+		for (String line : lines) {
+			if (capture) {
+				if (line.startsWith("\t")) {
+					failureException += line + "\n";
+				} else {
+					capture = false;
+				}
+			}
+			if (line.startsWith(AFE)) {
+				failureClass = AFE;
+				capture = true;
+				failure = line.substring(AFE.length() + 2);
+				failureException = line + "\n";
+			}
+			if (line.startsWith(TIME)) {
+				String temp = line.substring(TIME.length()).trim();
+				this.time = Float.parseFloat(temp);
+			}
+		}
 	}
 	
 }
