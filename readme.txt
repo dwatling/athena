@@ -32,6 +32,12 @@ The source code is provided as-is and is under an Apache 2.0 license.
 
 ---
 
+USAGE: athena <root of Android test project>
+Example: athena ~/projects/my_proj_test
+
+---
+
+
 WHAT'S NEW
 
 v1.0
