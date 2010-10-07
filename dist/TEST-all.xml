@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+	<testsuite errors="0" failures="0" name="ServiceAPITest" package="com.follett.fsc.eReader.test.api" tests="0" time="0" timestamp="2010-10-07T02:58:00">
+		<properties/>
+		<system-out>
+		</system-out>
+		<system-err>
+		</system-err>
+	</testsuite>
+	<testsuite errors="0" failures="0" name="LibraryActivityTest" package="com.follett.fsc.eReader.test" tests="2" time="0" timestamp="2010-10-07T02:58:00">
+		<properties/>
+		<testcase classname="com.follett.fsc.eReader.test.LibraryActivityTest" name="testLibraryBookCount" time="0.712">
+		</testcase>
+		<testcase classname="com.follett.fsc.eReader.test.LibraryActivityTest" name="testTapOnBookOpensReader" time="1.022">
+		</testcase>
+		<system-out>
+		</system-out>
+		<system-err>
+		</system-err>
+	</testsuite>
+	<testsuite errors="0" failures="0" name="PageCacheTest" package="com.follett.fsc.eReader.test.utils" tests="3" time="0" timestamp="2010-10-07T02:58:05">
+		<properties/>
+		<testcase classname="com.follett.fsc.eReader.test.utils.PageCacheTest" name="testInitialState" time="0.029">
+		</testcase>
+		<testcase classname="com.follett.fsc.eReader.test.utils.PageCacheTest" name="testNextPage" time="0.035">
+		</testcase>
+		<testcase classname="com.follett.fsc.eReader.test.utils.PageCacheTest" name="testPreviousPage" time="0.041">
+		</testcase>
+		<system-out>
+		</system-out>
+		<system-err>
+		</system-err>
+	</testsuite>
+	<testsuite errors="0" failures="2" name="ReaderViewTest" package="com.follett.fsc.eReader.test.views" tests="7" time="2" timestamp="2010-10-07T02:58:11">
+		<properties/>
+		<testcase classname="com.follett.fsc.eReader.test.views.ReaderViewTest" name="testTap" time="0.041">
+		</testcase>
+		<testcase classname="com.follett.fsc.eReader.test.views.ReaderViewTest" name="testDrag" time="0.046">
+		</testcase>
+		<testcase classname="com.follett.fsc.eReader.test.views.ReaderViewTest" name="testDragLocksImageToScreen_UL" time="0.047">
+		</testcase>
+		<testcase classname="com.follett.fsc.eReader.test.views.ReaderViewTest" name="testDragLocksImageToScreen_LR" time="0.045">
+		</testcase>
+		<testcase classname="com.follett.fsc.eReader.test.views.ReaderViewTest" name="testSwipeLeftGesture" time="1.099">
+			<failure type="junit.framework.AssertionFailedError" message="Should have called show expected:&lt;true&gt; but was:&lt;false&gt;">
+junit.framework.AssertionFailedError: Should have called show expected:&lt;true&gt; but was:&lt;false&gt;
+	at com.follett.fsc.eReader.test.views.ReaderViewTest.testSwipeLeftGesture(ReaderViewTest.java:137)
+	at java.lang.reflect.Method.invokeNative(Native Method)
+	at android.test.AndroidTestRunner.runTest(AndroidTestRunner.java:169)
+	at android.test.AndroidTestRunner.runTest(AndroidTestRunner.java:154)
+	at android.test.InstrumentationTestRunner.onStart(InstrumentationTestRunner.java:430)
+	at android.app.Instrumentation$InstrumentationThread.run(Instrumentation.java:1447)
+
+			</failure>
+		</testcase>
+		<testcase classname="com.follett.fsc.eReader.test.views.ReaderViewTest" name="testSwipeRightGesture" time="1.085">
+			<failure type="junit.framework.AssertionFailedError" message="Should have called show expected:&lt;true&gt; but was:&lt;false&gt;">
+junit.framework.AssertionFailedError: Should have called show expected:&lt;true&gt; but was:&lt;false&gt;
+	at com.follett.fsc.eReader.test.views.ReaderViewTest.testSwipeRightGesture(ReaderViewTest.java:166)
+	at java.lang.reflect.Method.invokeNative(Native Method)
+	at android.test.AndroidTestRunner.runTest(AndroidTestRunner.java:169)
+	at android.test.AndroidTestRunner.runTest(AndroidTestRunner.java:154)
+	at android.test.InstrumentationTestRunner.onStart(InstrumentationTestRunner.java:430)
+	at android.app.Instrumentation$InstrumentationThread.run(Instrumentation.java:1447)
+
+			</failure>
+		</testcase>
+		<testcase classname="com.follett.fsc.eReader.test.views.ReaderViewTest" name="testScaleGesture" time="0.045">
+		</testcase>
+		<system-out>
+		</system-out>
+		<system-err>
+		</system-err>
+	</testsuite>
+</testsuites>
