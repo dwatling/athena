@@ -16,8 +16,8 @@
  
 ---
 
-Athena is a simple TestRunner meant to be run on an Android device. It will output
-test results in an XML format digestible by Hudson (and probably any other CI application).
+Athena is a simple command-line utility that will run your Android test project and output
+the test results in an XML format digestible by Hudson (and probably any other CI application).
 
 In order to use Athena, you will need to do the following:
 
