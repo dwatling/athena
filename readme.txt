@@ -40,6 +40,12 @@ Example: athena ~/projects/my_proj_test
 
 WHAT'S NEW
 
+v1.1
+- Fixed the issue sgkimsm reported.
+- Added MockCursor to the mix. The plan is to come up with a group of helper classes
+  that will make testing easier. MockCursor will allow you to easily test your methods
+  that take a Cursor.
+
 v1.0
 - Completely rewritten. No longer requires you to modify your Android test project in anyway.
   No need for AllTests.java. 
