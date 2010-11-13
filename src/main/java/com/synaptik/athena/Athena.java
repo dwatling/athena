@@ -32,19 +32,20 @@ import java.util.List;
  * TODO: Use an XML parser to retrieve package from Manifest
  * TODO: This code is terribly hokey and was just slapped together. Rewrite and put tests around it.
  * 
- * USAGE: athena <root of your Android test project>
- * OUTPUTS: TEST-all.xml
+ * USAGE: athena <root of your Android test project> <output file [OPTIONAL]>
+ * OUTPUTS: If no output file is specified, TEST-all.xml in the current directory.
  * 
  * @author Dan Watling <dan@synaptik.com>
  */
 public class Athena {
+	public static final String OUTPUT_FILE = "TEST-all.xml";
 	
 	StringBuilder output;
 	String packageName;
 	
 	public static void main(String[] args) throws Exception {
 		if (args.length == 0) {
-			System.out.println("USAGE: athena <root of your Android test project>");
+			System.out.println("USAGE: athena <root of your Android test project> <output file [default=TEST-all.xml]>");
 		} else {
 			new Athena().run(args);
 		}
@@ -52,47 +53,55 @@ public class Athena {
 	
 	public void run(String[] args) throws Exception {
 		System.out.println("\nBegin Athena\n");
-		File root = new File(args[0]);
-		packageName = getPackageNameFromManifest(root);
-		
-		output = new StringBuilder();
-		
-		long start = System.currentTimeMillis();
-		output.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-		output.append("<testsuites>\n");
-		List<AthenaTestSuite> testSuites = findAllTestClasses(root);
-		
-		int totalFailures = 0;
-		int totalErrors = 0;
-		int totalTests = 0;
-		
-		System.out.println("Found " + testSuites.size() + " test suites.");
-		for (AthenaTestSuite suite : testSuites) {
-			System.out.print("Running " + suite.tests.size() + " test(s) for " + suite.className + ": ");
-			for (AthenaTest testCase : suite.tests) {
-				runCommand(suite, testCase);
-			}
-			System.out.println();
-			totalFailures += suite.getFailures();
-			totalErrors += suite.getErrors();
-			totalTests += suite.tests.size();
-			output.append(suite.toXML());
+		String inputFile = args[0];
+		String outputFile = args.length > 1 ? args[1] : null;
+		if (outputFile == null || outputFile.length() == 0) {
+			outputFile = OUTPUT_FILE;
 		}
-		output.append("</testsuites>\n");
-		long end = System.currentTimeMillis();
 		
-		float pctFail = ((float)totalFailures / (float)totalTests) * 100.0f;
-		float pctError = ((float)totalErrors / (float)totalTests) * 100.0f;
-		
-		System.out.println();
-		System.out.println("Total tests: " + totalTests);
-		System.out.println("Total failures: " + totalFailures + " (" + pctFail + ")");
-		System.out.println("Total errors: " + totalErrors + " (" + pctError + ")");
-		System.out.println("Total time: " + (end - start) / 1000 + " seconds");
-		
-		FileWriter fw = new FileWriter("TEST-all.xml");
-		fw.write(output.toString());
-		fw.close();
+		FileWriter fw = null;
+		try {
+			fw = new FileWriter(outputFile);
+			File root = new File(inputFile);
+			packageName = getPackageNameFromManifest(root);
+			
+			long start = System.currentTimeMillis();
+			fw.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+			fw.append("<testsuites>\n");
+			List<AthenaTestSuite> testSuites = findAllTestClasses(root);
+			
+			int totalFailures = 0;
+			int totalErrors = 0;
+			int totalTests = 0;
+			
+			System.out.println("Found " + testSuites.size() + " test suites.");
+			for (AthenaTestSuite suite : testSuites) {
+				System.out.print("Running " + suite.tests.size() + " test(s) for " + suite.className + ": ");
+				for (AthenaTest testCase : suite.tests) {
+					runCommand(suite, testCase);
+				}
+				System.out.println();
+				totalFailures += suite.getFailures();
+				totalErrors += suite.getErrors();
+				totalTests += suite.tests.size();
+				fw.append(suite.toXML());
+			}
+			fw.append("</testsuites>\n");
+			long end = System.currentTimeMillis();
+			
+			float pctFail = ((float)totalFailures / (float)totalTests) * 100.0f;
+			float pctError = ((float)totalErrors / (float)totalTests) * 100.0f;
+			
+			System.out.println();
+			System.out.println("Total tests: " + totalTests);
+			System.out.println("Total failures: " + totalFailures + " (" + pctFail + ")");
+			System.out.println("Total errors: " + totalErrors + " (" + pctError + ")");
+			System.out.println("Total time: " + (end - start) / 1000 + " seconds");
+		} finally {
+			if (fw != null) {
+				fw.close();
+			}
+		}
 		System.out.println("\nEnd Athena\n");
 	}
 	

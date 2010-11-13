@@ -51,7 +51,10 @@ public class AthenaTestResult {
 	 * @return
 	 */
 	public static String getTestNameFromString(String str) {
-		String result = str.substring(0, str.indexOf("("));
+		String result = null;
+		if (str != null) {
+			result = str.substring(0, str.indexOf("("));
+		}
 		return result;
 	}
 	/**
@@ -60,8 +63,11 @@ public class AthenaTestResult {
 	 * @return
 	 */
 	public static String getClassNameFromString(String str) {
-		String result = str.substring(str.indexOf("(")+1);
-		result = result.substring(0, result.length()-1);	// remove trailling ')'
+		String result = null;
+		if (str != null) {
+			result = str.substring(str.indexOf("(")+1);
+			result = result.substring(0, result.length()-1);	// remove trailing ')'
+		}
 		return result;
 	}
 
@@ -70,10 +76,13 @@ public class AthenaTestResult {
 	 * 
 	 * I'm sure there is a standard way of doing this. But this should work for now...
 	 */
-	protected String escapeHTML(String input) {
-		String result = input.replaceAll("<", "&lt;");
-		result = result.replaceAll(">", "&gt;");
-		result = result.replaceAll("\"", "&quot;");
+	public static String escapeHTML(String input) {
+		String result = null;
+		if (input != null) {
+			result = input.replaceAll("<", "&lt;");
+			result = result.replaceAll(">", "&gt;");
+			result = result.replaceAll("\"", "&quot;");
+		}
 		return result;
 	}
 	
@@ -95,7 +104,12 @@ public class AthenaTestResult {
 			if (line.startsWith(AFE)) {
 				failureClass = AFE;
 				capture = true;
-				failure = line.substring(AFE.length() + 2);
+				// +1 for the trailing ':'
+				if (line.length() > AFE.length()+1) {
+					failure = line.substring(AFE.length() + 2);
+				} else {
+					failure = "";
+				}
 				failureException = line + "\n";
 			}
 			if (line.startsWith(TIME)) {
