@@ -26,6 +26,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.parsers.*;
+import org.xml.sax.SAXException;
+import org.w3c.dom.*;
 
 
 /**
@@ -110,18 +113,20 @@ public class Athena {
 		File manifest = new File(root.getAbsolutePath() + "/AndroidManifest.xml");
 		String result = null;
 		if (manifest.exists()) {
-			FileReader fr = new FileReader(manifest);
-			BufferedReader br = new BufferedReader(fr);
-			String line = br.readLine();
-			while (line != null) {
-				if (line.contains("package")) {
-					result = line.trim();
-					result = result.substring(result.indexOf("package")+9);
-					result = result.substring(0, result.indexOf("\""));
-					break;
-				}
-				line = br.readLine();
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			try {
+				DocumentBuilder db = dbf.newDocumentBuilder();
+				Document dom = db.parse(manifest);
+				//Node manifestNode = dom.getElementsByTagName("manifest").item(0);
+				result = dom.getElementsByTagName("manifest").item(0).getAttributes().getNamedItem("package").getNodeValue(); 
+			}catch(ParserConfigurationException pce) {
+				pce.printStackTrace();
+			}catch(SAXException se) {
+				se.printStackTrace();
+			}catch(IOException ioe) {
+				ioe.printStackTrace();
 			}
+	
 		}
 		else {
 			throw(new IOException ("Could not find an Android Manifest file: "+manifest.getAbsolutePath()));

@@ -17,8 +17,6 @@ public class AthenaManifestTests extends TestCase {
 	public void testFindPackage() throws Exception {
         File root = new File("testData");
         System.out.println(root.getAbsolutePath());
-		assertEquals(myAthena.getPackageNameFromManifest(root), "package=\"fi.vtt.psw.tests\"");
+		assertEquals("fi.vtt.psw.tests",myAthena.getPackageNameFromManifest(root));
 	}
-	
-
 }
