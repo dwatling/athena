@@ -105,7 +105,8 @@ public class Athena {
 		System.out.println("\nEnd Athena\n");
 	}
 	
-	private String getPackageNameFromManifest(File root) throws IOException {
+
+	String getPackageNameFromManifest(File root) throws IOException {
 		File manifest = new File(root.getAbsolutePath() + "/AndroidManifest.xml");
 		String result = null;
 		if (manifest.exists()) {
@@ -121,6 +122,9 @@ public class Athena {
 				}
 				line = br.readLine();
 			}
+		}
+		else {
+			throw(new IOException ("Could not find an Android Manifest file: "+manifest.getAbsolutePath()));
 		}
 		return result;
 	}
