@@ -55,6 +55,9 @@ public class Athena {
 	}
 	
 	public void run(String[] args) throws Exception {
+		int totalFailures = 0;
+		int totalErrors = 0;
+		int totalTests = 0;
 		System.out.println("\nBegin Athena\n");
 		String inputFile = args[0];
 		String outputFile = args.length > 1 ? args[1] : null;
@@ -73,9 +76,7 @@ public class Athena {
 			fw.append("<testsuites>\n");
 			List<AthenaTestSuite> testSuites = findAllTestClasses(root);
 			
-			int totalFailures = 0;
-			int totalErrors = 0;
-			int totalTests = 0;
+
 			
 			System.out.println("Found " + testSuites.size() + " test suites.");
 			for (AthenaTestSuite suite : testSuites) {
@@ -106,6 +107,9 @@ public class Athena {
 			}
 		}
 		System.out.println("\nEnd Athena\n");
+		if (totalFailures>0 || totalErrors>0){
+			System.exit(-1);
+		}
 	}
 	
 
