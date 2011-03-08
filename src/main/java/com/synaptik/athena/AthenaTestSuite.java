@@ -36,11 +36,19 @@ public class AthenaTestSuite {
 	}
 	
 	protected String getPackage() {
-		return className.substring(0, className.lastIndexOf("."));
+		if (className.contains(".")) {
+			return className.substring(0, className.lastIndexOf("."));
+		} else {
+			return className;
+		}
 	}
 	
 	protected String getClassName() {
-		return className.substring(className.lastIndexOf(".")+1);
+		if (className.contains(".")) {
+			return className.substring(className.lastIndexOf(".")+1);
+		} else {
+			return className;
+		}
 	}
 	
 	protected int getErrors() {
