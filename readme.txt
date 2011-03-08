@@ -39,6 +39,14 @@ Example: athena ~/projects/my_proj_test
 
 
 WHAT'S NEW
+v1.1.2
+
+Features:
++ Athena returns error code -1 when tests fail
+
+Bug fixes:
+- More reliable detection of Android package name (with unit test)
+- Better handling of classes in the default package 
 
 v1.1
 - Fixed the issue sgkimsm reported.
