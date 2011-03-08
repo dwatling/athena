@@ -19,13 +19,16 @@ package com.synaptik.athena;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+//import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.parsers.*;
+import org.xml.sax.SAXException;
+import org.w3c.dom.*;
 
 
 /**
@@ -52,6 +55,9 @@ public class Athena {
 	}
 	
 	public void run(String[] args) throws Exception {
+		int totalFailures = 0;
+		int totalErrors = 0;
+		int totalTests = 0;
 		System.out.println("\nBegin Athena\n");
 		String inputFile = args[0];
 		String outputFile = args.length > 1 ? args[1] : null;
@@ -70,9 +76,7 @@ public class Athena {
 			fw.append("<testsuites>\n");
 			List<AthenaTestSuite> testSuites = findAllTestClasses(root);
 			
-			int totalFailures = 0;
-			int totalErrors = 0;
-			int totalTests = 0;
+
 			
 			System.out.println("Found " + testSuites.size() + " test suites.");
 			for (AthenaTestSuite suite : testSuites) {
@@ -103,24 +107,33 @@ public class Athena {
 			}
 		}
 		System.out.println("\nEnd Athena\n");
+		if (totalFailures>0 || totalErrors>0){
+			System.exit(-1);
+		}
 	}
 	
-	private String getPackageNameFromManifest(File root) throws IOException {
+
+	String getPackageNameFromManifest(File root) throws IOException {
 		File manifest = new File(root.getAbsolutePath() + "/AndroidManifest.xml");
 		String result = null;
 		if (manifest.exists()) {
-			FileReader fr = new FileReader(manifest);
-			BufferedReader br = new BufferedReader(fr);
-			String line = br.readLine();
-			while (line != null) {
-				if (line.contains("package")) {
-					result = line.trim();
-					result = result.substring(result.indexOf("package")+9);
-					result = result.substring(0, result.indexOf("\""));
-					break;
-				}
-				line = br.readLine();
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			try {
+				DocumentBuilder db = dbf.newDocumentBuilder();
+				Document dom = db.parse(manifest);
+				//Node manifestNode = dom.getElementsByTagName("manifest").item(0);
+				result = dom.getElementsByTagName("manifest").item(0).getAttributes().getNamedItem("package").getNodeValue(); 
+			}catch(ParserConfigurationException pce) {
+				pce.printStackTrace();
+			}catch(SAXException se) {
+				se.printStackTrace();
+			}catch(IOException ioe) {
+				ioe.printStackTrace();
 			}
+	
+		}
+		else {
+			throw(new IOException ("Could not find an Android Manifest file: "+manifest.getAbsolutePath()));
 		}
 		return result;
 	}
